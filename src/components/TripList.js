@@ -2,12 +2,13 @@ import React, { useState, useEffect } from "react";
 import "./TripList.css";
 export default function TripList() {
   const [trips, setTrips] = useState([]);
+  const [url, setUrl] = useState("http://localhost:3000/trips");
 
   useEffect(() => {
-    fetch("http://localhost:3000/trips")
+    fetch(url)
       .then((res) => res.json())
       .then((data) => setTrips(data));
-  }, []);
+  }, [url]);
   console.log(trips);
 
   return (
@@ -23,6 +24,21 @@ export default function TripList() {
           );
         })}
       </ul>
+      <div className="filters">
+        <button
+          onClick={() => setUrl("http://localhost:3000/trips?loc=europe")}
+        >
+          European Trips
+        </button>
+        <button
+          onClick={() => setUrl("http://localhost:3000/trips?loc=america")}
+        >
+          American trips
+        </button>
+        <button onClick={() => setUrl("http://localhost:3000/trips")}>
+          All trips
+        </button>
+      </div>
     </div>
   );
 }
