@@ -2,35 +2,42 @@ import { useState, useEffect } from "react";
 
 export const useFetch = (url) => {
   const [data, setData] = useState(null);
-  const [isPending, setIspending] = useState(false);
+  const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchData = async () => {
-      setIspending(true);
+      setIsPending(true);
+
       try {
-        const response = await fetch(url);
-        console.log(response);
-        if (!response.ok) {
-          throw new Error(response.statusText);
+        const res = await fetch(url, { signal: controller.signal });
+        if (!res.ok) {
+          throw new Error(res.statusText);
         }
+        const data = await res.json();
 
-        const json = await response.json();
-
-        setIspending(false);
-        setData(json); //2nd it returns the data by setting the set
+        setIsPending(false);
+        setData(data);
         setError(null);
       } catch (err) {
-        setIspending(false);
-        console.log(err.message);
-
-        setError("Could not fetch the data");
+        if (err.name === "AbortError") {
+          console.log("the fetch was aborted");
+        } else {
+          setIsPending(false);
+          setError("Could not fetch the data");
+          console.log(err.message);
+        }
       }
     };
+
     fetchData();
+
+    return () => {
+      controller.abort();
+    };
   }, [url]);
 
-  return { data: data, isPending, error }; //1st it returns null,
+  return { data, isPending, error };
 };
-//this is not a default export
-//it is accpeted in curly brackets
